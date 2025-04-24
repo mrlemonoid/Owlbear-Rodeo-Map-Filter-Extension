@@ -2,6 +2,7 @@
   "name": "Map Filter Extension",
   "description": "Apply color filters and chroma key transparency to maps in Owlbear Rodeo.",
   "version": "1.0.0",
+  "manifest_version": 2,
   "entry": "index.html",
   "type": "ui"
 }
