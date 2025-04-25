@@ -1,0 +1,11 @@
+{
+  "name": "owlbear-map-filter",
+  "version": "1.0.0",
+  "description": "Owlbear Rodeo térképszűrő kiegészítő effekt alapon",
+  "author": "mrlemonoid",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@owlbear-rodeo/sdk": "^3.1.0"
+  }
+}

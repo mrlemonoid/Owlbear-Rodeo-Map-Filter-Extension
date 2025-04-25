@@ -1,23 +1,37 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Owlbear Map Filter</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script type="module" crossorigin src="./assets/index-d5c9ef13.js"></script>
+  <link rel="icon" href="/icon.svg">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #1e1e2f;
+      color: white;
+      padding: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 0.5rem;
+    }
+    input[type=range] {
+      width: 100%;
+    }
+    #no-selection-msg {
+      color: red;
+      margin-bottom: 1rem;
+    }
+  </style>
 </head>
 <body>
-  <h1>🎨 Owlbear Map Filter</h1>
-  <div id="no-selection-msg" style="color:red;">Kérjük, válassz ki egy Map típusú képet.</div>
+  <h2>🎨 Owlbear Map Filter</h2>
+  <div id="no-selection-msg">Kérjük, válassz ki egy Map típusú képet.</div>
+  <label>Hue: <input id="hue" type="range" min="-180" max="180" value="0" /></label>
+  <label>Saturation: <input id="saturation" type="range" min="0" max="200" value="100" /></label>
+  <label>Brightness: <input id="brightness" type="range" min="0" max="200" value="100" /></label>
 
-  <div>
-    <label>Hue: <input id="hue" type="range" min="0" max="360" value="0" /></label><br/>
-    <label>Saturation: <input id="saturation" type="range" min="0" max="200" value="100" /></label><br/>
-    <label>Brightness: <input id="brightness" type="range" min="0" max="200" value="100" /></label><br/>
-    <label>Gamma: <input id="gamma" type="range" min="50" max="200" value="100" /></label><br/>
-    <label>Chroma Key: <input id="chroma" type="range" min="0" max="100" value="0" /></label>
-  </div>
-
-  
+  <script type="module" src="/main.js"></script>
 </body>
 </html>
