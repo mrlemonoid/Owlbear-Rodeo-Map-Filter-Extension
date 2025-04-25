@@ -1,5 +1,5 @@
 {
-  "name": "Map Filter (Vite)",
+  "name": "Owlbear Map Filter",
   "version": "1.0.0",
   "manifest_version": 1,
   "description": "Adjust hue, saturation, brightness and chroma of map images.",
