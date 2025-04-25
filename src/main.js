@@ -28,6 +28,33 @@ function applyFilters(itemId) {
     }
   });
 }
+// Segédfüggvény: debounce
+function debounce(func, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+}
+
+// Eredeti applyFilters, de debounced változatban
+const debouncedApplyFilters = debounce((itemId) => {
+  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
+  OBR.scene.items.updateItems([itemId], (items) => {
+    for (const item of items) {
+      item.metadata = {
+        ...item.metadata,
+        "map-filter-extension": {
+          hue,
+          saturation,
+          brightness,
+          gamma,
+          chroma,
+        },
+      };
+    }
+  });
+}, 200); // 200 ms várakozás a módosítás után
 
 function setupSliders(itemId) {
   const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
@@ -36,7 +63,7 @@ function setupSliders(itemId) {
     if (el) {
       el.addEventListener("input", () => {
         FILTER_STATE[id] = Number(el.value);
-        applyFilters(itemId);
+        debouncedApplyFilters(itemId);
       });
     }
   });
