@@ -1,9 +1,11 @@
 {
-  "manifest_version": 2,
+  "manifestVersion": 1,
+  "id": "map-filter",
   "name": "Map Filter",
   "version": "1.0.0",
   "author": "Your Name",
-  "description": "Advanced map filtering extension",
-  "entry": "./index.ts",
-  "icon": "/icon.png"
+  "description": "Applies color filters to map elements",
+  "main": "./index.js",  // Must be .js even if using TypeScript
+  "icon": "/icon.png",
+  "permissions": []  // No permissions needed for basic image manipulation
 }
