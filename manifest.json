@@ -4,11 +4,13 @@
   "description": "Hue, saturation, brightness, gamma, and color key adjustments for maps.",
   "version": "1.0.0",
   "icon": "icon.png",
-  "action": {
-    "type": "ui",
-    "title": "Map Filter",
-    "source": "ui.html",
-    "icon": "icon.png",
-    "popover": "ui.html"
-  }
+  "modules": [
+    {
+      "id": "map-filter-ui",
+      "type": "ui",
+      "title": "Map Filter",
+      "icon": "icon.png",
+      "popover": "ui.html"
+    }
+  ]
 }
