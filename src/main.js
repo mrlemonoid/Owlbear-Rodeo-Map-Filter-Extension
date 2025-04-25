@@ -1,60 +1,62 @@
+// main.js
 import OBR from "@owlbear-rodeo/sdk";
+
+const FILTER_STATE = {
+  hue: 0,
+  saturation: 100,
+  brightness: 100,
+  gamma: 100,
+  chroma: 0,
+};
+
+const noSelectionMsg = document.getElementById("no-selection-msg");
+
+function applyFilters(itemId) {
+  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
+  OBR.scene.items.updateItems([{
+    id: itemId,
+    metadata: {
+      "map-filter-extension": {
+        hue,
+        saturation,
+        brightness,
+        gamma,
+        chroma,
+      },
+    },
+  }]);
+}
+
+function setupSliders(itemId) {
+  const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
+  sliders.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", () => {
+        FILTER_STATE[id] = Number(el.value);
+        applyFilters(itemId);
+      });
+    }
+  });
+}
 
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  let selectedId = null;
+  try {
+    const items = await OBR.scene.items.getItems();
+    console.log("Összes scene item:", items);
 
-  const updateSelectedStyle = () => {
-    if (!selectedId) return;
+    const selected = items.find((item) => item.type === "IMAGE" && item.layer === "MAP");
 
-    const hue = document.getElementById("hue").value;
-    const saturation = document.getElementById("saturation").value;
-    const brightness = document.getElementById("brightness").value;
-    const gamma = document.getElementById("gamma").value;
-    const chroma = document.getElementById("chroma").value;
-
-    OBR.scene.items.updateItems([selectedId], (items) => {
-      for (const item of items) {
-        item.transform = {
-          ...item.transform,
-          hue: parseFloat(hue),
-          saturation: parseFloat(saturation) / 100,
-          brightness: parseFloat(brightness) / 100,
-          gamma: parseFloat(gamma) / 100,
-        };
-
-        item.filters = {
-          keyColor: chroma > 0 ? "#00ff00" : null,
-          keyColorStrength: chroma > 0 ? parseFloat(chroma) / 100 : 0,
-        };
-      }
-    });
-  };
-
-  ["hue", "saturation", "brightness", "gamma", "chroma"].forEach(id => {
-    document.getElementById(id).addEventListener("input", updateSelectedStyle);
-  });
-
-  const updateSelection = async () => {
-    const selection = await OBR.player.getSelection();
-    if (selection.length > 0) {
-      const selected = await OBR.scene.items.getItem(selection[0]);
-      console.log("Selected:", selected);
-      if (selected?.type === "IMAGE" && selected.layer === "MAP") {
-        selectedId = selected.id;
-        document.getElementById("no-selection-msg").style.display = "none";
-      } else {
-        selectedId = null;
-        document.getElementById("no-selection-msg").style.display = "block";
-      }
+    if (selected) {
+      noSelectionMsg.style.display = "none";
+      setupSliders(selected.id);
     } else {
-      selectedId = null;
-      document.getElementById("no-selection-msg").style.display = "block";
+      noSelectionMsg.style.display = "block";
     }
-  };
-
-  await updateSelection();
-  OBR.player.onSelectionChange(updateSelection);
-  OBR.scene.items.onChange(updateSelection);
+  } catch (e) {
+    console.error("Hiba a getItems() közben:", e);
+    noSelectionMsg.style.display = "block";
+  }
 });
