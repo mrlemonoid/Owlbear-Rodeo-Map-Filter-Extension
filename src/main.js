@@ -1,3 +1,4 @@
+// main.js
 import OBR from "@owlbear-rodeo/sdk";
 
 const FILTER_STATE = {
@@ -9,24 +10,6 @@ const FILTER_STATE = {
 };
 
 const noSelectionMsg = document.getElementById("no-selection-msg");
-
-function applyFilters(itemId) {
-  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
-  OBR.scene.items.updateItems([itemId], (items) => {
-    for (const item of items) {
-      item.metadata = {
-        ...item.metadata,
-        "map-filter-extension": {
-          hue,
-          saturation,
-          brightness,
-          gamma,
-          chroma,
-        },
-      };
-    }
-  });
-}
 
 function debounce(func, delay) {
   let timeout;
@@ -70,26 +53,43 @@ function setupSliders(itemId) {
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  let anchorId = null;
+  // 1. Context gomb regisztrálás minden IMAGE típusú elemre
+  OBR.contextMenu.create({
+    id: "map-filter.apply-filter",
+    icons: [
+      {
+        icon: "/icon.svg",
+        label: "Térkép szűrő",
+      },
+    ],
+    onClick(context) {
+      const selected = context.items.find((item) => item.type === "IMAGE");
+      if (selected) {
+        OBR.popover.open({
+          id: "map-filter-ui",
+          url: "/index.html",
+          height: 400,
+          width: 300,
+          anchorElementId: selected.id,
+        });
+      }
+    },
+    filter: {
+      every: [{ key: "type", value: "IMAGE" }],
+    },
+  });
 
-  if (OBR.popover && typeof OBR.popover.getContext === "function") {
-    try {
-      const context = await OBR.popover.getContext();
-      anchorId = context?.anchorElementId || null;
-    } catch (e) {
-      console.warn("Popover context nem elérhető:", e);
-    }
-  }
-
-  if (!anchorId) {
-    console.warn("Nem popoverből lett megnyitva. Kilépés.");
+  // 2. Ha Popoverként nyitották meg, setup sliders
+  const context = await OBR.popover.getContext();
+  if (!context?.anchorElementId) {
+    console.warn("Nem popoverből nyitották meg.");
     return;
   }
 
   try {
     const items = await OBR.scene.items.getItems();
     const selected = items.find(
-      (item) => item.id === anchorId && item.type === "IMAGE" && item.layer === "MAP"
+      (item) => item.id === context.anchorElementId && item.type === "IMAGE"
     );
 
     if (selected) {
@@ -102,36 +102,4 @@ OBR.onReady(async () => {
     console.error("Hiba a getItems() közben:", e);
     noSelectionMsg.style.display = "block";
   }
-
-  // context menü gomb
-  OBR.contextMenu.create({
-    id: "map-filter.apply-filter",
-    icons: [
-      {
-        icon: "/icon.svg",
-        label: "Térkép szűrő",
-      },
-    ],
-    onClick(context) {
-      const selected = context.items.find(
-        (item) => item.type === "IMAGE" && item.layer === "MAP"
-      );
-
-      if (selected) {
-        OBR.popover.open({
-          id: "map-filter-ui",
-          url: "/index.html",
-          height: 400,
-          width: 300,
-          anchorElementId: selected.id,
-        });
-      }
-    },
-    filter: {
-      every: [
-        { key: "layer", value: "MAP" },
-        { key: "type", value: "IMAGE" },
-      ],
-    },
-  });
 });
