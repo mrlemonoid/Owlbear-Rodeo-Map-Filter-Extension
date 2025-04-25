@@ -8,6 +8,10 @@
     "type": "ui",
     "title": "Map Filter",
     "source": "ui.html",
-    "icon": "icon.png"
+    "icon": "icon.png",
+    "popover": {
+      "height": 300,
+      "width": 300
+    }
   }
 }
