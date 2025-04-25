@@ -1,8 +1,8 @@
 {
-  "name": "map-filter",
-  "manifest_version": "2",
-  "description": "Apply hue, saturation, brightness, gamma and chroma key to map items.",
+  "manifest_verion": "2",
+  "name": "Map Filter",
+  "description": "Színtónus, telítettség, fényerő, gamma és zöldháttér-szűrés Map típusú elemekhez.",
   "version": "1.0.0",
   "icon": "icon.png",
-  "entry": "ui.html"
+  "entry": "index.html"
 }
