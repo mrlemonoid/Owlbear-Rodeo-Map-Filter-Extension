@@ -1,73 +1,6 @@
-// main.js
 import OBR from "@owlbear-rodeo/sdk";
 
-const FILTER_STATE = {
-  hue: 0,
-  saturation: 100,
-  brightness: 100,
-  gamma: 100,
-  chroma: 0,
-};
-
-const noSelectionMsg = document.getElementById("no-selection-msg");
-
-function applyFilters(itemId) {
-  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
-  OBR.scene.items.updateItems([itemId], (items) => {
-    for (const item of items) {
-      item.metadata = {
-        ...item.metadata,
-        "map-filter-extension": {
-          hue,
-          saturation,
-          brightness,
-          gamma,
-          chroma,
-        },
-      };
-    }
-  });
-}
-// Segédfüggvény: debounce
-function debounce(func, delay) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), delay);
-  };
-}
-
-// Eredeti applyFilters, de debounced változatban
-const debouncedApplyFilters = debounce((itemId) => {
-  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
-  OBR.scene.items.updateItems([itemId], (items) => {
-    for (const item of items) {
-      item.metadata = {
-        ...item.metadata,
-        "map-filter-extension": {
-          hue,
-          saturation,
-          brightness,
-          gamma,
-          chroma,
-        },
-      };
-    }
-  });
-}, 200); // 200 ms várakozás a módosítás után
-
-function setupSliders(itemId) {
-  const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
-  sliders.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", () => {
-        FILTER_STATE[id] = Number(el.value);
-        debouncedApplyFilters(itemId);
-      });
-    }
-  });
-}
+// ... (a többi része változatlan marad)
 
 OBR.onReady(async () => {
   console.log("OBR ready");
@@ -105,8 +38,10 @@ OBR.onReady(async () => {
       );
 
       if (selected) {
+        const randomId = "map-filter-ui-" + Math.floor(Math.random() * 1000000);
+
         OBR.popover.open({
-          id: "map-filter-ui",
+          id: randomId,
           url: "/index.html",
           height: 400,
           width: 300,
