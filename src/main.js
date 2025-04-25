@@ -13,18 +13,20 @@ const noSelectionMsg = document.getElementById("no-selection-msg");
 
 function applyFilters(itemId) {
   const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
-  OBR.scene.items.updateItems([{
-    id: itemId,
-    metadata: {
-      "map-filter-extension": {
-        hue,
-        saturation,
-        brightness,
-        gamma,
-        chroma,
-      },
-    },
-  }]);
+  OBR.scene.items.updateItems([itemId], (items) => {
+    for (const item of items) {
+      item.metadata = {
+        ...item.metadata,
+        "map-filter-extension": {
+          hue,
+          saturation,
+          brightness,
+          gamma,
+          chroma,
+        },
+      };
+    }
+  });
 }
 
 function setupSliders(itemId) {
@@ -53,15 +55,15 @@ OBR.onReady(async () => {
       noSelectionMsg.style.display = "none";
       setupSliders(selected.id);
     } else {
+      console.warn("Nincs megfelelő Map típusú item");
       noSelectionMsg.style.display = "block";
     }
   } catch (e) {
     console.error("Hiba a getItems() közben:", e);
     noSelectionMsg.style.display = "block";
   }
-});
 
-OBR.onReady(() => {
+  // Context menü gomb regisztrálása
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
     icons: [
