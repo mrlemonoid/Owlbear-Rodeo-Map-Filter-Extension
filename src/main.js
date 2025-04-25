@@ -1,3 +1,4 @@
+// main.js
 import OBR from "@owlbear-rodeo/sdk";
 
 const FILTER_STATE = {
@@ -10,13 +11,10 @@ const FILTER_STATE = {
 
 const noSelectionMsg = document.getElementById("no-selection-msg");
 
-function applyFilters(item) {
-  if (!item || !item.id) return;
-
+function applyFilters(itemId) {
   const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
-
   OBR.scene.items.updateItems([{
-    id: item.id,
+    id: itemId,
     metadata: {
       "map-filter-extension": {
         hue,
@@ -26,19 +24,17 @@ function applyFilters(item) {
         chroma,
       },
     },
-  }]).catch(e => {
-    console.error("Nem sikerült frissíteni az itemet:", e);
-  });
+  }]);
 }
 
-function setupSliders(item) {
+function setupSliders(itemId) {
   const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
   sliders.forEach((id) => {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener("input", () => {
         FILTER_STATE[id] = Number(el.value);
-        applyFilters(item);
+        applyFilters(itemId);
       });
     }
   });
@@ -51,16 +47,49 @@ OBR.onReady(async () => {
     const items = await OBR.scene.items.getItems();
     console.log("Összes scene item:", items);
 
-    if (mapItem) {
-      console.log("Kiválasztott map:", mapItem);
+    const selected = items.find((item) => item.type === "IMAGE" && item.layer === "MAP");
+
+    if (selected) {
       noSelectionMsg.style.display = "none";
-      setupSliders(mapItem);
+      setupSliders(selected.id);
     } else {
-      console.warn("Nincs megfelelő Map típusú item");
       noSelectionMsg.style.display = "block";
     }
   } catch (e) {
     console.error("Hiba a getItems() közben:", e);
     noSelectionMsg.style.display = "block";
   }
+});
+
+OBR.onReady(() => {
+  OBR.contextMenu.create({
+    id: "map-filter.apply-filter",
+    icons: [
+      {
+        icon: "/icon.svg",
+        label: "Térkép szűrő",
+      },
+    ],
+    onClick(context) {
+      const selected = context.items.find(
+        (item) => item.type === "IMAGE" && item.layer === "MAP"
+      );
+
+      if (selected) {
+        OBR.popover.open({
+          id: "map-filter-ui",
+          url: "/index.html",
+          height: 400,
+          width: 300,
+          anchorElementId: selected.id,
+        });
+      }
+    },
+    filter: {
+      every: [
+        { key: "layer", value: "MAP" },
+        { key: "type", value: "IMAGE" },
+      ],
+    },
+  });
 });
