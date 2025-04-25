@@ -1,7 +1,44 @@
 <!DOCTYPE html>
-<html>
-  <head><meta charset="UTF-8"></head>
-  <body>
-    <script type="module" src="tool.js"></script>
-  </body>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <title>Image Filter Extension</title>
+  <style>
+    body { font-family: sans-serif; margin: 10px; }
+    h1 { font-size: 1.2em; margin-bottom: 0.5em; }
+    .slider-group { margin: 8px 0; }
+    .slider-group label { display: block; font-weight: bold; margin-bottom: 2px; }
+    .slider-group input[type="range"] { width: 100%; }
+    #no-selection-msg { color: #900; }
+  </style>
+</head>
+<body>
+  <h1>🖼️ Képszűrő eszköz</h1>
+  <div id="no-selection-msg" style="display: none;">
+    Kérjük, válassz ki egy <strong>Map</strong> típusú képet a használathoz.
+  </div>
+  <div id="controls">
+    <div class="slider-group">
+      <label for="hue">Hue (Színárnyalat)</label>
+      <input id="hue" type="range" min="0" max="360" value="0" />
+    </div>
+    <div class="slider-group">
+      <label for="saturation">Saturation (Telítettség)</label>
+      <input id="saturation" type="range" min="0" max="200" value="100" />
+    </div>
+    <div class="slider-group">
+      <label for="brightness">Brightness (Fényerő)</label>
+      <input id="brightness" type="range" min="0" max="200" value="100" />
+    </div>
+    <div class="slider-group">
+      <label for="gamma">Gamma</label>
+      <input id="gamma" type="range" min="50" max="200" value="100" />
+    </div>
+    <div class="slider-group">
+      <label for="chroma">Chroma Key (Kulcsszín szűrés)</label>
+      <input id="chroma" type="range" min="0" max="100" value="0" />
+    </div>
+  </div>
+  <script src="main.js"></script>
+</body>
 </html>

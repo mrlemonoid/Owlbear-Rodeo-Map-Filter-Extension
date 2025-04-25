@@ -1,25 +1,15 @@
 {
-  "manifest_version": 1,
-  "name": "Map Filter",
-  "description": "Színtónus, telítettség, fényerő, gamma és chroma key szűrők a térképekhez.",
+  "name": "Image Filter Tool",
   "version": "1.0.0",
-  "icon": "icon.png",
-  "modules": [
-    {
-      "name": "Map Filter Tool",
-      "type": "tool",
-      "tool": {
-        "label": "Színszűrő",
-        "icon": "icon.png",
-        "script": "tool.js"
-      }
-    },
-    {
-      "name": "Map Filter Popover",
-      "type": "popover",
-      "popover": {
-        "url": "filter-ui.html"
-      }
-    }
-  ]
+  "manifest_version": 1,
+  "description": "Apply real-time adjustable color filters to a selected map image.",
+  "author": "Fejlesztő Neve",
+  "icon": "/icon.svg",
+  "action": {
+    "title": "Image Filter",
+    "icon": "/icon.svg",
+    "popover": "/index.html",
+    "width": 300,
+    "height": 400
+  }
 }
