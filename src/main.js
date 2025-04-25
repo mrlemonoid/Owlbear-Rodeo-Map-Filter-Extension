@@ -1,3 +1,4 @@
+// main.js
 import OBR from "@owlbear-rodeo/sdk";
 
 const FILTER_STATE = {
@@ -56,47 +57,35 @@ function setupSliders(itemId) {
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  const context = await OBR.popover.getContext();
-  if (!context || !context.anchorElementId) {
-    console.warn("Popover nem kiválasztott képre lett nyitva.");
-    return;
-  }
-
   try {
     const items = await OBR.scene.items.getItems();
     console.log("Összes scene item:", items);
 
-    const selected = items.find(
-      (item) =>
-        item.id === context.anchorElementId &&
-        item.type === "IMAGE"
-    );
+    // Csak akkor próbálja kezelni a felületet, ha popoverben van
+    if (OBR.popover) {
+      const context = await OBR.popover.getContext();
+      const selectedId = context?.anchorElementId;
+      const selected = items.find(item => item.id === selectedId && item.type === "IMAGE");
 
-    if (selected) {
-      noSelectionMsg.style.display = "none";
-      setupSliders(selected.id);
-    } else {
-      console.warn("A kiválasztott item nem képtípus.");
-      noSelectionMsg.style.display = "block";
+      if (selected) {
+        noSelectionMsg.style.display = "none";
+        setupSliders(selected.id);
+      } else {
+        console.warn("Nincs megfelelő IMAGE típusú item kiválasztva.");
+        noSelectionMsg.style.display = "block";
+      }
     }
   } catch (e) {
     console.error("Hiba a getItems() közben:", e);
     noSelectionMsg.style.display = "block";
   }
 
+  // Context menü gomb
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
-    icons: [
-      {
-        icon: "/icon.svg",
-        label: "Térkép szűrő",
-      },
-    ],
+    icons: [{ icon: "/icon.svg", label: "Térkép szűrő" }],
     onClick(context) {
-      const selected = context.items.find(
-        (item) => item.type === "IMAGE"
-      );
-
+      const selected = context.items.find(item => item.type === "IMAGE");
       if (selected) {
         OBR.popover.open({
           id: "map-filter-ui",
