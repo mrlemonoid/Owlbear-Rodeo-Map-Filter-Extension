@@ -1,4 +1,3 @@
-// main.js
 import OBR from "@owlbear-rodeo/sdk";
 
 const FILTER_STATE = {
@@ -11,15 +10,7 @@ const FILTER_STATE = {
 
 const noSelectionMsg = document.getElementById("no-selection-msg");
 
-function debounce(func, delay) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), delay);
-  };
-}
-
-const debouncedApplyFilters = debounce((itemId) => {
+function applyFilters(itemId) {
   const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
   OBR.scene.items.updateItems([itemId], (items) => {
     for (const item of items) {
@@ -35,6 +26,18 @@ const debouncedApplyFilters = debounce((itemId) => {
       };
     }
   });
+}
+
+function debounce(func, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+}
+
+const debouncedApplyFilters = debounce((itemId) => {
+  applyFilters(itemId);
 }, 200);
 
 function setupSliders(itemId) {
@@ -53,7 +56,33 @@ function setupSliders(itemId) {
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  // 1. Context gomb regisztrálás minden IMAGE típusú elemre
+  // 🎯 Csak akkor próbáljuk használni, ha tényleg popoverből fut
+  if (OBR.popover?.getContext) {
+    try {
+      const context = await OBR.popover.getContext();
+
+      if (!context?.anchorElementId) {
+        console.warn("Nem popoverből nyitották meg vagy nincs kijelölt elem.");
+        return;
+      }
+
+      const items = await OBR.scene.items.getItems();
+      const selected = items.find(item => item.id === context.anchorElementId);
+
+      if (selected) {
+        noSelectionMsg.style.display = "none";
+        setupSliders(selected.id);
+      } else {
+        console.warn("A kiválasztott item nem található.");
+        noSelectionMsg.style.display = "block";
+      }
+
+    } catch (e) {
+      console.warn("Nem popover környezetben fut: ", e);
+    }
+  }
+
+  // 🔧 Context menü regisztrálása globálisan, ez mindig lefuthat
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
     icons: [
@@ -63,7 +92,10 @@ OBR.onReady(async () => {
       },
     ],
     onClick(context) {
-      const selected = context.items.find((item) => item.type === "IMAGE");
+      const selected = context.items.find((item) =>
+        item.type === "IMAGE"
+      );
+
       if (selected) {
         OBR.popover.open({
           id: "map-filter-ui",
@@ -75,31 +107,9 @@ OBR.onReady(async () => {
       }
     },
     filter: {
-      every: [{ key: "type", value: "IMAGE" }],
+      every: [
+        { key: "type", value: "IMAGE" },
+      ],
     },
   });
-
-  // 2. Ha Popoverként nyitották meg, setup sliders
-  const context = await OBR.popover.getContext();
-  if (!context?.anchorElementId) {
-    console.warn("Nem popoverből nyitották meg.");
-    return;
-  }
-
-  try {
-    const items = await OBR.scene.items.getItems();
-    const selected = items.find(
-      (item) => item.id === context.anchorElementId && item.type === "IMAGE"
-    );
-
-    if (selected) {
-      noSelectionMsg.style.display = "none";
-      setupSliders(selected.id);
-    } else {
-      noSelectionMsg.style.display = "block";
-    }
-  } catch (e) {
-    console.error("Hiba a getItems() közben:", e);
-    noSelectionMsg.style.display = "block";
-  }
 });
