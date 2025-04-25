@@ -1,10 +1,13 @@
+// manifest.json
 {
+  "id": "map-filter-extension",
   "manifestVersion": 1,
-  "id": "map-filter",
   "name": "Map Filter",
+  "description": "Hue, saturation, brightness, gamma, and color key adjustments for maps.",
   "version": "1.0.0",
-  "author": "Your Name",
-  "description": "Applies color filters to map elements",
-  "main": "./index.js",
-  "icon": "/icon.png"
+  "action": {
+    "type": "ui",
+    "source": "ui.html"
+  },
+  "icon": "icon.png"
 }
