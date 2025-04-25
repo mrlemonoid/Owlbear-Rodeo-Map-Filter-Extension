@@ -43,16 +43,21 @@ OBR.onReady(async () => {
       const selection = await OBR.player.getSelection();
       if (selection.length > 0) {
         const selected = await OBR.scene.items.getItem(selection[0]);
-        if (selected.type === "IMAGE" && selected.layer === "MAP") {
+        console.log("Selection raw object:", selected);
+
+        if (selected && selected.type === "IMAGE" && selected.layer === "MAP") {
           selectedId = selected.id;
-          console.log("Selected map image:", selectedId);
+          console.log("✅ Map image selected:", selectedId);
+          document.getElementById("no-selection-msg").style.display = "none";
         } else {
           selectedId = null;
-          console.log("Selected item is not a Map image.");
+          console.log("❌ Not a Map image.");
+          document.getElementById("no-selection-msg").style.display = "block";
         }
       } else {
         selectedId = null;
-        console.log("No item selected.");
+        console.log("⚠️ No item selected.");
+        document.getElementById("no-selection-msg").style.display = "block";
       }
     };
 
