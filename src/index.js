@@ -44,13 +44,13 @@ function setupSliders(itemId) {
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  const context = await OBR.popover.getContext?.();
-  if (!context || !context.anchorElementId) {
-    console.warn("Nem popoverből lett megnyitva – kilépés.");
-    return;
-  }
-
   try {
+    const context = await OBR.popover.getContext();
+    if (!context?.anchorElementId) {
+      console.warn("Nem popoverből lett megnyitva – kilépés.");
+      return;
+    }
+
     const items = await OBR.scene.items.getItems();
     console.log("Összes scene item:", items);
 
@@ -62,8 +62,8 @@ OBR.onReady(async () => {
       document.getElementById("no-selection-msg").style.display = "none";
       setupSliders(selected.id);
     } else {
-      console.warn("A kiválasztott item nem IMAGE típusú.");
       document.getElementById("no-selection-msg").style.display = "block";
+      console.warn("A kiválasztott item nem IMAGE típusú.");
     }
   } catch (e) {
     console.error("Hiba a getItems() közben:", e);
