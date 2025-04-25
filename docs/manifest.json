@@ -2,11 +2,11 @@
   "name": "Image Filter Tool",
   "version": "1.0.0",
   "manifest_version": 1,
-  "description": "Apply color filters to a map.",
+  "description": "Apply real-time adjustable color filters to a selected map image.",
   "author": "mrlemonoid",
   "icon": "/icon.svg",
   "action": {
-    "title": "Map Filter",
+    "title": "Image Filter",
     "icon": "/icon.svg",
     "popover": "/index.html",
     "width": 300,
