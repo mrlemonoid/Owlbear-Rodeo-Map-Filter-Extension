@@ -7,7 +7,7 @@
   "icon": "./icon.svg",
   "action": {
     "title": "Image Filter",
-    "icon": "./icon.svg",
+    "icon": "https://raw.githubusercontent.com/mrlemonoid/Owlbear-Rodeo-Map-Filter-Extension/main/docs/icon.svg"
     "popover": "./index.html",
     "width": 300,
     "height": 400
