@@ -6,19 +6,5 @@
   "author": "Your Name",
   "description": "Advanced map filtering extension",
   "entry": "./index.ts",
-  "icon": "/icon.png",
-  "permissions": [
-    {
-      "name": "SCENE",
-      "access": ["READ", "WRITE"]
-    },
-    {
-      "name": "ASSETS",
-      "access": ["READ"]
-    },
-    {
-      "name": "UI",
-      "access": ["CREATE"]
-    }
-  ]
+  "icon": "/icon.png"
 }
