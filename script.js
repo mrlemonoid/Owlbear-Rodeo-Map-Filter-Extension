@@ -1,4 +1,3 @@
-// script.js
 const filters = {
   hue: 0,
   saturation: 1,
