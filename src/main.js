@@ -1,6 +1,8 @@
 import OBR from "@owlbear-rodeo/sdk";
 
 OBR.onReady(async () => {
+  console.log("OBR ready");
+
   let selectedId = null;
 
   const updateSelectedStyle = () => {
@@ -12,20 +14,22 @@ OBR.onReady(async () => {
     const gamma = document.getElementById("gamma").value;
     const chroma = document.getElementById("chroma").value;
 
-    const style = {
-      transform: {
-        hue: parseFloat(hue),
-        saturation: parseFloat(saturation) / 100,
-        brightness: parseFloat(brightness) / 100,
-        gamma: parseFloat(gamma) / 100,
-      },
-      filters: {
-        keyColor: chroma > 0 ? "#00ff00" : null,
-        keyColorStrength: chroma > 0 ? parseFloat(chroma) / 100 : 0,
-      }
-    };
+    OBR.scene.items.updateItems([selectedId], (items) => {
+      for (const item of items) {
+        item.transform = {
+          ...item.transform,
+          hue: parseFloat(hue),
+          saturation: parseFloat(saturation) / 100,
+          brightness: parseFloat(brightness) / 100,
+          gamma: parseFloat(gamma) / 100,
+        };
 
-    OBR.scene.items.updateItems([{ id: selectedId, style }]);
+        item.filters = {
+          keyColor: chroma > 0 ? "#00ff00" : null,
+          keyColorStrength: chroma > 0 ? parseFloat(chroma) / 100 : 0,
+        };
+      }
+    });
   };
 
   ["hue", "saturation", "brightness", "gamma", "chroma"].forEach(id => {
