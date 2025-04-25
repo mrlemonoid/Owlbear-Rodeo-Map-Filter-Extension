@@ -8,24 +8,46 @@ const FILTER_STATE = {
   chroma: 0,
 };
 
+let effectId = null;
+
 const noSelectionMsg = document.getElementById("no-selection-msg");
 
-function applyFilters(itemId) {
-  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
-  OBR.scene.items.updateItems([itemId], (items) => {
-    for (const item of items) {
-      item.metadata = {
-        ...item.metadata,
-        "map-filter-extension": {
-          hue,
-          saturation,
-          brightness,
-          gamma,
-          chroma,
-        },
-      };
-    }
-  });
+function createOrUpdateEffect(targetItem) {
+  if (!targetItem) return;
+
+  const effectData = {
+    hue: FILTER_STATE.hue,
+    saturation: FILTER_STATE.saturation,
+    brightness: FILTER_STATE.brightness,
+    gamma: FILTER_STATE.gamma,
+    chroma: FILTER_STATE.chroma,
+  };
+
+  if (effectId) {
+    OBR.scene.items.updateItems([effectId], (items) => {
+      for (const item of items) {
+        if (item.type === "EFFECT") {
+          item.effect.data = effectData;
+        }
+      }
+    });
+  } else {
+    effectId = `effect-${Date.now()}`;
+    OBR.scene.items.addItems([{
+      id: effectId,
+      type: "EFFECT",
+      name: "Map Filter Effect",
+      visible: true,
+      locked: true,
+      transform: { width: targetItem.transform.width, height: targetItem.transform.height },
+      zIndex: targetItem.zIndex + 1,
+      attachedTo: targetItem.id,
+      effect: {
+        url: "/effect.js",
+        data: effectData
+      }
+    }]);
+  }
 }
 
 function debounce(func, delay) {
@@ -36,18 +58,18 @@ function debounce(func, delay) {
   };
 }
 
-const debouncedApplyFilters = debounce((itemId) => {
-  applyFilters(itemId);
+const debouncedApply = debounce((item) => {
+  createOrUpdateEffect(item);
 }, 200);
 
-function setupSliders(itemId) {
+function setupSliders(targetItem) {
   const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
   sliders.forEach((id) => {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener("input", () => {
         FILTER_STATE[id] = Number(el.value);
-        debouncedApplyFilters(itemId);
+        debouncedApply(targetItem);
       });
     }
   });
@@ -56,7 +78,6 @@ function setupSliders(itemId) {
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  // Get context only if the popover was opened with anchor
   let anchorId = null;
   try {
     const context = await OBR.popover.getContext?.();
@@ -69,14 +90,14 @@ OBR.onReady(async () => {
     const items = await OBR.scene.items.getItems();
     console.log("Összes scene item:", items);
 
-    const selected = items.find((item) => {
-      if (anchorId) return item.id === anchorId;
-      return item.type === "IMAGE" && item.layer === "MAP";
-    });
+    const selected = items.find((item) =>
+      anchorId ? item.id === anchorId : (item.type === "IMAGE" && item.layer === "MAP")
+    );
 
     if (selected) {
       noSelectionMsg.style.display = "none";
-      setupSliders(selected.id);
+      setupSliders(selected);
+      createOrUpdateEffect(selected);
     } else {
       noSelectionMsg.style.display = "block";
     }
