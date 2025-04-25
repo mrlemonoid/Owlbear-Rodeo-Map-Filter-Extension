@@ -2,13 +2,13 @@
   "name": "Image Filter Tool",
   "version": "1.0.0",
   "manifest_version": 1,
-  "description": "Apply real-time adjustable color filters to a selected map image.",
+  "description": "Filter extension",
   "author": "mrlemonoid",
-  "icon": "./icon.svg",
+  "icon": "icon.svg",
   "action": {
     "title": "Image Filter",
-    "icon": "https://raw.githubusercontent.com/mrlemonoid/Owlbear-Rodeo-Map-Filter-Extension/main/docs/icon.svg"
-    "popover": "./index.html",
+    "icon": "icon.svg",
+    "popover": "index.html",
     "width": 300,
     "height": 400
   }
