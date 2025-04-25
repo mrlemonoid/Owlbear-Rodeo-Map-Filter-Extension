@@ -1,4 +1,3 @@
-// main.js
 import OBR from "@owlbear-rodeo/sdk";
 
 const FILTER_STATE = {
@@ -11,10 +10,13 @@ const FILTER_STATE = {
 
 const noSelectionMsg = document.getElementById("no-selection-msg");
 
-function applyFilters(itemId) {
+function applyFilters(item) {
+  if (!item || !item.id) return;
+
   const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
+
   OBR.scene.items.updateItems([{
-    id: itemId,
+    id: item.id,
     metadata: {
       "map-filter-extension": {
         hue,
@@ -24,17 +26,19 @@ function applyFilters(itemId) {
         chroma,
       },
     },
-  }]);
+  }]).catch(e => {
+    console.error("Nem sikerült frissíteni az itemet:", e);
+  });
 }
 
-function setupSliders(itemId) {
+function setupSliders(item) {
   const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
   sliders.forEach((id) => {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener("input", () => {
         FILTER_STATE[id] = Number(el.value);
-        applyFilters(itemId);
+        applyFilters(item);
       });
     }
   });
@@ -45,14 +49,14 @@ OBR.onReady(async () => {
 
   try {
     const items = await OBR.scene.items.getItems();
-    console.log("Összes scene item:", items);
+    const mapItem = items.find((i) => i.type === "IMAGE" && i.layer === "MAP");
 
-    const selected = items.find((item) => item.type === "IMAGE" && item.layer === "MAP");
-
-    if (selected) {
+    if (mapItem) {
+      console.log("Kiválasztott map:", mapItem);
       noSelectionMsg.style.display = "none";
-      setupSliders(selected.id);
+      setupSliders(mapItem);
     } else {
+      console.warn("Nincs megfelelő Map típusú item");
       noSelectionMsg.style.display = "block";
     }
   } catch (e) {
