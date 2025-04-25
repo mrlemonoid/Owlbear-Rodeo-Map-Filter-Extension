@@ -1,16 +1,8 @@
 {
-  "manifest_version": 1,
-  "name": "Map Filter",
-  "description": "Hue, saturation, brightness, gamma, and color key adjustments for maps.",
+  "id": "map-filter",
+  "title": "Map Filter",
+  "description": "Apply hue, saturation, brightness, gamma and chroma key filters to maps.",
   "version": "1.0.0",
-  "icon": "icon.png",
-  "modules": [
-    {
-      "id": "map-filter-ui",
-      "type": "ui",
-      "title": "Map Filter",
-      "icon": "icon.png",
-      "popover": "ui.html"
-    }
-  ]
+  "entry": "ui.html",
+  "icon": "icon.png"
 }
