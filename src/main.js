@@ -49,7 +49,7 @@ OBR.onReady(async () => {
 
   try {
     const items = await OBR.scene.items.getItems();
-    const mapItem = items.find((i) => i.type === "IMAGE" && i.layer === "MAP");
+    console.log("Összes scene item:", items);
 
     if (mapItem) {
       console.log("Kiválasztott map:", mapItem);
