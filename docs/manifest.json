@@ -2,13 +2,12 @@
   "name": "Image Filter Tool",
   "version": "1.0.0",
   "manifest_version": 1,
-  "description": "Filter extension",
-  "author": "mrlemonoid",
-  "icon": "icon.svg",
+  "description": "Map filter extension",
+  "icon": "/icon.svg",
   "action": {
-    "title": "Image Filter",
-    "icon": "icon.svg",
-    "popover": "index.html",
+    "title": "Map Filter",
+    "icon": "/icon.svg",
+    "popover": "/index.html",
     "width": 300,
     "height": 400
   }
