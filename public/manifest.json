@@ -1,0 +1,15 @@
+{
+  "name": "Map Filter (Vite)",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "description": "Adjust hue, saturation, brightness and chroma of map images.",
+  "author": "mrlemonoid",
+  "icon": "/icon.svg",
+  "action": {
+    "title": "Map Filter",
+    "icon": "/icon.svg",
+    "popover": "/index.html",
+    "width": 300,
+    "height": 400
+  }
+}
