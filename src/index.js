@@ -24,6 +24,7 @@ function createOrUpdateEffect(targetItem) {
   };
 
   if (effectId) {
+    // Ha már létezik effekt, frissítjük
     OBR.scene.items.updateItems([effectId], (items) => {
       for (const item of items) {
         if (item.type === "EFFECT") {
@@ -32,21 +33,40 @@ function createOrUpdateEffect(targetItem) {
       }
     });
   } else {
-    effectId = `effect-${Date.now()}`;
-    OBR.scene.items.addItems([{
-      id: effectId,
-      type: "EFFECT",
-      name: "Map Filter Effect",
-      visible: true,
-      locked: true,
-      transform: { width: targetItem.transform.width, height: targetItem.transform.height },
-      zIndex: targetItem.zIndex + 1,
-      attachedTo: targetItem.id,
-      effect: {
-        url: "/effect.js",
-        data: effectData
-      }
-    }]);
+    // Ellenőrzés hogy minden adat megvan
+    if (
+      targetItem.transform &&
+      typeof targetItem.transform.width === "number" &&
+      typeof targetItem.transform.height === "number" &&
+      typeof targetItem.zIndex === "number" &&
+      targetItem.position
+    ) {
+      effectId = `effect-${Date.now()}`;
+
+      OBR.scene.items.addItems([{
+        id: effectId,
+        type: "EFFECT",
+        name: "Map Filter Effect",
+        visible: true,
+        locked: true,
+        transform: {
+          width: targetItem.transform.width,
+          height: targetItem.transform.height,
+        },
+        position: {
+          x: targetItem.position.x,
+          y: targetItem.position.y,
+        },
+        zIndex: targetItem.zIndex + 1,
+        attachedTo: targetItem.id,
+        effect: {
+          url: "/effect.js",
+          data: effectData,
+        },
+      }]);
+    } else {
+      console.warn("Nem megfelelő targetItem az effekt létrehozásához:", targetItem);
+    }
   }
 }
 
@@ -58,8 +78,8 @@ function debounce(func, delay) {
   };
 }
 
-const debouncedApply = debounce((item) => {
-  createOrUpdateEffect(item);
+const debouncedApply = debounce((targetItem) => {
+  createOrUpdateEffect(targetItem);
 }, 200);
 
 function setupSliders(targetItem) {
@@ -80,19 +100,22 @@ OBR.onReady(async () => {
 
   let anchorId = null;
   try {
-    const context = await OBR.popover.getContext?.();
+    const context = await OBR.popover.getContext();
     anchorId = context?.anchorElementId;
   } catch (e) {
-    console.warn("Popover context not available.");
+    console.warn("Popover context nem elérhető.");
   }
 
   try {
     const items = await OBR.scene.items.getItems();
     console.log("Összes scene item:", items);
 
-    const selected = items.find((item) =>
-      anchorId ? item.id === anchorId : (item.type === "IMAGE" && item.layer === "MAP")
-    );
+    const selected = items.find(item => {
+      if (anchorId) {
+        return item.id === anchorId;
+      }
+      return item.type === "IMAGE" && item.layer === "MAP";
+    });
 
     if (selected) {
       noSelectionMsg.style.display = "none";
