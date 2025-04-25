@@ -1,7 +1,7 @@
 OBR.onReady(async () => {
   try {
     const items = await OBR.scene.items.getItems();
-    console.log("Scene is ready. Found", items.length, "items.");
+    console.log("🔍 All scene items:", items);
 
     let selectedId = null;
 
@@ -33,12 +33,10 @@ OBR.onReady(async () => {
       }]);
     };
 
-    // Eseményfigyelők
     ["hue", "saturation", "brightness", "gamma", "chroma"].forEach(id => {
       document.getElementById(id).addEventListener("input", updateSelectedStyle);
     });
 
-    // Kijelölés kezelése
     const updateSelection = async () => {
       const selection = await OBR.player.getSelection();
       if (selection.length > 0) {
@@ -63,7 +61,7 @@ OBR.onReady(async () => {
 
     await updateSelection();
 
-    OBR.player.onChange(updateSelection);
+    OBR.player.selection.onChange(updateSelection);
     OBR.scene.items.onChange(updateSelection);
 
   } catch (e) {
