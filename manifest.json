@@ -1,6 +1,6 @@
 {
-  "manifest_verion": "2",
-  "name": "Map Filter",
+  "manifest_version": 1,
+  "name": "map-filter",
   "description": "Színtónus, telítettség, fényerő, gamma és zöldháttér-szűrés Map típusú elemekhez.",
   "version": "1.0.0",
   "icon": "icon.png",
