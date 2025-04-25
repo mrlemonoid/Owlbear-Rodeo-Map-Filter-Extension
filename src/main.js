@@ -10,25 +10,30 @@ const FILTER_STATE = {
 
 const noSelectionMsg = document.getElementById("no-selection-msg");
 
+function applyFilters(itemId) {
+  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
+  OBR.scene.items.updateItems([itemId], (items) => {
+    for (const item of items) {
+      item.metadata = {
+        ...item.metadata,
+        "map-filter-extension": {
+          hue,
+          saturation,
+          brightness,
+          gamma,
+          chroma,
+        },
+      };
+    }
+  });
+}
+
 function debounce(func, delay) {
   let timeout;
   return (...args) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), delay);
   };
-}
-
-function setupSliders(itemId) {
-  const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
-  sliders.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", () => {
-        FILTER_STATE[id] = Number(el.value);
-        debouncedApplyFilters(itemId);
-      });
-    }
-  });
 }
 
 const debouncedApplyFilters = debounce((itemId) => {
@@ -49,10 +54,56 @@ const debouncedApplyFilters = debounce((itemId) => {
   });
 }, 200);
 
+function setupSliders(itemId) {
+  const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
+  sliders.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", () => {
+        FILTER_STATE[id] = Number(el.value);
+        debouncedApplyFilters(itemId);
+      });
+    }
+  });
+}
+
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  // 📌 Regisztráljuk a context menüt minden esetben (csak egyszer)
+  let anchorId = null;
+
+  if (OBR.popover && typeof OBR.popover.getContext === "function") {
+    try {
+      const context = await OBR.popover.getContext();
+      anchorId = context?.anchorElementId || null;
+    } catch (e) {
+      console.warn("Popover context nem elérhető:", e);
+    }
+  }
+
+  if (!anchorId) {
+    console.warn("Nem popoverből lett megnyitva. Kilépés.");
+    return;
+  }
+
+  try {
+    const items = await OBR.scene.items.getItems();
+    const selected = items.find(
+      (item) => item.id === anchorId && item.type === "IMAGE" && item.layer === "MAP"
+    );
+
+    if (selected) {
+      noSelectionMsg.style.display = "none";
+      setupSliders(selected.id);
+    } else {
+      noSelectionMsg.style.display = "block";
+    }
+  } catch (e) {
+    console.error("Hiba a getItems() közben:", e);
+    noSelectionMsg.style.display = "block";
+  }
+
+  // context menü gomb
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
     icons: [
@@ -83,31 +134,4 @@ OBR.onReady(async () => {
       ],
     },
   });
-
-  // 📌 Csak akkor mutassuk meg az UI-t, ha egy MAP popoverből lett megnyitva
-  const context = await OBR.popover.getContext();
-  if (!context || !context.anchorElementId) {
-    console.warn("Popover was not opened from a selected map. Exiting.");
-    return;
-  }
-
-  try {
-    const items = await OBR.scene.items.getItems();
-    const selected = items.find(
-      (item) => item.id === context.anchorElementId &&
-                item.type === "IMAGE" &&
-                item.layer === "MAP"
-    );
-
-    if (selected) {
-      noSelectionMsg.style.display = "none";
-      setupSliders(selected.id);
-    } else {
-      console.warn("A kiválasztott item nem megfelelő Map típusú.");
-      noSelectionMsg.style.display = "block";
-    }
-  } catch (e) {
-    console.error("Hiba a getItems() közben:", e);
-    noSelectionMsg.style.display = "block";
-  }
 });
