@@ -37,21 +37,7 @@ function debounce(func, delay) {
 }
 
 const debouncedApplyFilters = debounce((itemId) => {
-  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
-  OBR.scene.items.updateItems([itemId], (items) => {
-    for (const item of items) {
-      item.metadata = {
-        ...item.metadata,
-        "map-filter-extension": {
-          hue,
-          saturation,
-          brightness,
-          gamma,
-          chroma,
-        },
-      };
-    }
-  });
+  applyFilters(itemId);
 }, 200);
 
 function setupSliders(itemId) {
@@ -68,19 +54,32 @@ function setupSliders(itemId) {
 }
 
 OBR.onReady(async () => {
-  const context = await OBR.popover.getContext();
-  const selectedId = context?.anchorElementId;
+  console.log("OBR ready");
 
-  if (!selectedId) {
-    noSelectionMsg.style.display = "block";
-    return;
+  // Get context only if the popover was opened with anchor
+  let anchorId = null;
+  try {
+    const context = await OBR.popover.getContext?.();
+    anchorId = context?.anchorElementId;
+  } catch (e) {
+    console.warn("Popover context not available.");
   }
 
   try {
     const items = await OBR.scene.items.getItems();
     console.log("Összes scene item:", items);
-    setupSliders(selectedId);
-    noSelectionMsg.style.display = "none";
+
+    const selected = items.find((item) => {
+      if (anchorId) return item.id === anchorId;
+      return item.type === "IMAGE" && item.layer === "MAP";
+    });
+
+    if (selected) {
+      noSelectionMsg.style.display = "none";
+      setupSliders(selected.id);
+    } else {
+      noSelectionMsg.style.display = "block";
+    }
   } catch (e) {
     console.error("Hiba a getItems() közben:", e);
     noSelectionMsg.style.display = "block";
