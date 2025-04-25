@@ -5,6 +5,7 @@
   "description": "Adjust hue, saturation, brightness and chroma of map images.",
   "author": "mrlemonoid",
   "icon": "/icon.svg",
+  "permissions": ["scene", "player"],
   "action": {
     "title": "Map Filter",
     "icon": "/icon.svg",
