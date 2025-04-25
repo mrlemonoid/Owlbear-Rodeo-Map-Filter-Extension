@@ -2,7 +2,8 @@
   "name": "Image Filter Tool",
   "version": "1.0.0",
   "manifest_version": 1,
-  "description": "Map filter extension",
+  "description": "Apply color filters to a map.",
+  "author": "mrlemonoid",
   "icon": "/icon.svg",
   "action": {
     "title": "Map Filter",
