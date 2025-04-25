@@ -56,33 +56,34 @@ function setupSliders(itemId) {
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  // 🎯 Csak akkor próbáljuk használni, ha tényleg popoverből fut
-  if (OBR.popover?.getContext) {
-    try {
-      const context = await OBR.popover.getContext();
-
-      if (!context?.anchorElementId) {
-        console.warn("Nem popoverből nyitották meg vagy nincs kijelölt elem.");
-        return;
-      }
-
-      const items = await OBR.scene.items.getItems();
-      const selected = items.find(item => item.id === context.anchorElementId);
-
-      if (selected) {
-        noSelectionMsg.style.display = "none";
-        setupSliders(selected.id);
-      } else {
-        console.warn("A kiválasztott item nem található.");
-        noSelectionMsg.style.display = "block";
-      }
-
-    } catch (e) {
-      console.warn("Nem popover környezetben fut: ", e);
-    }
+  const context = await OBR.popover.getContext();
+  if (!context || !context.anchorElementId) {
+    console.warn("Popover nem kiválasztott képre lett nyitva.");
+    return;
   }
 
-  // 🔧 Context menü regisztrálása globálisan, ez mindig lefuthat
+  try {
+    const items = await OBR.scene.items.getItems();
+    console.log("Összes scene item:", items);
+
+    const selected = items.find(
+      (item) =>
+        item.id === context.anchorElementId &&
+        item.type === "IMAGE"
+    );
+
+    if (selected) {
+      noSelectionMsg.style.display = "none";
+      setupSliders(selected.id);
+    } else {
+      console.warn("A kiválasztott item nem képtípus.");
+      noSelectionMsg.style.display = "block";
+    }
+  } catch (e) {
+    console.error("Hiba a getItems() közben:", e);
+    noSelectionMsg.style.display = "block";
+  }
+
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
     icons: [
@@ -92,8 +93,8 @@ OBR.onReady(async () => {
       },
     ],
     onClick(context) {
-      const selected = context.items.find((item) =>
-        item.type === "IMAGE"
+      const selected = context.items.find(
+        (item) => item.type === "IMAGE"
       );
 
       if (selected) {
@@ -107,9 +108,7 @@ OBR.onReady(async () => {
       }
     },
     filter: {
-      every: [
-        { key: "type", value: "IMAGE" },
-      ],
+      every: [{ key: "type", value: "IMAGE" }],
     },
   });
 });
