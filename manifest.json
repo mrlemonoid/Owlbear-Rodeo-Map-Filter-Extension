@@ -1,5 +1,6 @@
 {
   "name": "map-filter",
+  "manifest_version": "2",
   "title": "Map Filter",
   "description": "Apply hue, saturation, brightness, gamma and chroma key to map items.",
   "version": "1.0.0",
