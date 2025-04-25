@@ -5,7 +5,6 @@
   "version": "1.0.0",
   "author": "Your Name",
   "description": "Applies color filters to map elements",
-  "main": "./index.js",  // Must be .js even if using TypeScript
-  "icon": "/icon.png",
-  "permissions": []  // No permissions needed for basic image manipulation
+  "main": "./index.js",
+  "icon": "/icon.png"
 }
