@@ -8,26 +8,6 @@ const FILTER_STATE = {
   chroma: 0,
 };
 
-const noSelectionMsg = document.getElementById("no-selection-msg");
-
-function applyFilters(itemId) {
-  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
-  OBR.scene.items.updateItems([itemId], (items) => {
-    for (const item of items) {
-      item.metadata = {
-        ...item.metadata,
-        "map-filter-extension": {
-          hue,
-          saturation,
-          brightness,
-          gamma,
-          chroma,
-        },
-      };
-    }
-  });
-}
-
 function debounce(func, delay) {
   let timeout;
   return (...args) => {
@@ -37,7 +17,15 @@ function debounce(func, delay) {
 }
 
 const debouncedApplyFilters = debounce((itemId) => {
-  applyFilters(itemId);
+  const { hue, saturation, brightness, gamma, chroma } = FILTER_STATE;
+  OBR.scene.items.updateItems([itemId], (items) => {
+    for (const item of items) {
+      item.metadata = {
+        ...item.metadata,
+        "map-filter-extension": { hue, saturation, brightness, gamma, chroma },
+      };
+    }
+  });
 }, 200);
 
 function setupSliders(itemId) {
@@ -56,32 +44,29 @@ function setupSliders(itemId) {
 OBR.onReady(async () => {
   console.log("OBR ready");
 
-  // Get context only if the popover was opened with anchor
-  let anchorId = null;
-  try {
-    const context = await OBR.popover.getContext?.();
-    anchorId = context?.anchorElementId;
-  } catch (e) {
-    console.warn("Popover context not available.");
+  const context = await OBR.popover.getContext?.();
+  if (!context || !context.anchorElementId) {
+    console.warn("Nem popoverből lett megnyitva – kilépés.");
+    return;
   }
 
   try {
     const items = await OBR.scene.items.getItems();
     console.log("Összes scene item:", items);
 
-    const selected = items.find((item) => {
-      if (anchorId) return item.id === anchorId;
-      return item.type === "IMAGE" && item.layer === "MAP";
-    });
+    const selected = items.find(
+      (item) => item.id === context.anchorElementId && item.type === "IMAGE"
+    );
 
     if (selected) {
-      noSelectionMsg.style.display = "none";
+      document.getElementById("no-selection-msg").style.display = "none";
       setupSliders(selected.id);
     } else {
-      noSelectionMsg.style.display = "block";
+      console.warn("A kiválasztott item nem IMAGE típusú.");
+      document.getElementById("no-selection-msg").style.display = "block";
     }
   } catch (e) {
     console.error("Hiba a getItems() közben:", e);
-    noSelectionMsg.style.display = "block";
+    document.getElementById("no-selection-msg").style.display = "block";
   }
 });
