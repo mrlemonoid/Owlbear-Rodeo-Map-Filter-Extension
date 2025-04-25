@@ -1,20 +1,25 @@
 {
   "manifest_version": 1,
-  "id": "map-filter",
-  "title": "Map Filter",
-  "description": "Színtónus, telítettség, fényerő, gamma és zöldháttér-szűrés Map típusú elemekhez.",
+  "name": "Map Filter",
+  "description": "Színtónus, telítettség, fényerő, gamma és chroma key szűrők a térképekhez.",
   "version": "1.0.0",
   "icon": "icon.png",
   "modules": [
     {
-      "id": "map-filter-tool",
+      "name": "Map Filter Tool",
       "type": "tool",
-      "script": "tool.js"
+      "tool": {
+        "label": "Színszűrő",
+        "icon": "icon.png",
+        "script": "tool.js"
+      }
     },
     {
-      "id": "map-filter-ui",
+      "name": "Map Filter Popover",
       "type": "popover",
-      "html": "filter-ui.html"
+      "popover": {
+        "url": "filter-ui.html"
+      }
     }
   ]
 }
