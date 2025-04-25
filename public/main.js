@@ -69,4 +69,36 @@ OBR.onReady(async () => {
   noSelectionMsg.style.display = "none";
   setupSliders();
   createEffect();
+
+  // Context menü gomb újra aktiválása
+  OBR.contextMenu.create({
+    id: "map-filter.apply-filter",
+    icons: [
+      {
+        icon: "/icon.svg",
+        label: "Térkép szűrő",
+      },
+    ],
+    onClick(context) {
+      const selected = context.items.find(
+        (item) => item.type === "IMAGE" && item.layer === "MAP"
+      );
+
+      if (selected) {
+        OBR.popover.open({
+          id: `map-filter-ui-${selected.id}`,
+          url: "/index.html",
+          height: 400,
+          width: 300,
+          anchorElementId: selected.id,
+        });
+      }
+    },
+    filter: {
+      every: [
+        { key: "layer", value: "MAP" },
+        { key: "type", value: "IMAGE" },
+      ],
+    },
+  });
 });
