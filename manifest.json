@@ -9,9 +9,6 @@
     "title": "Map Filter",
     "source": "ui.html",
     "icon": "icon.png",
-    "popover": {
-      "height": 300,
-      "width": 300
-    }
+    "popover": "ui.html"
   }
 }
