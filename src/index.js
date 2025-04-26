@@ -55,10 +55,12 @@ function setupSliders() {
 }
 
 OBR.onReady(async () => {
-  const context = await OBR.popover.getContext();
+  console.log("[Owlbear Map Filter] Extension loaded");
+
+  const context = await OBR.popover.getWindowContext();
   if (!context || !context.anchorElementId) {
+    console.warn("Popover was not opened from a selected item.");
     document.getElementById("no-selection-msg").style.display = "block";
-    console.warn("Nincs kiválasztva térkép.");
     return;
   }
 
