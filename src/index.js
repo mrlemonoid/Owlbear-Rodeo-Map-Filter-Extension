@@ -11,7 +11,10 @@ const FILTER_STATE = {
 let effectId = null;
 
 function createOrUpdateEffect(targetItem) {
-  if (!targetItem) return;
+  if (!targetItem || !targetItem.image || !targetItem.position) {
+    console.warn("Nem megfelelő targetItem!", targetItem);
+    return;
+  }
 
   const effectData = {
     hue: FILTER_STATE.hue,
@@ -24,6 +27,7 @@ function createOrUpdateEffect(targetItem) {
   const effectUrl = "https://map-filter-extension.vercel.app/effect.js";
 
   if (effectId) {
+    // Ha már létezik az effekt, frissítjük
     OBR.scene.items.updateItems([effectId], (items) => {
       for (const item of items) {
         if (item.type === "EFFECT") {
@@ -32,41 +36,38 @@ function createOrUpdateEffect(targetItem) {
       }
     });
   } else {
-    if (
-      targetItem.image &&
-      typeof targetItem.image.width === "number" &&
-      typeof targetItem.image.height === "number" &&
-      typeof targetItem.zIndex === "number" &&
-      targetItem.position
-    ) {
-      effectId = `effect-${Date.now()}`;
-
-      OBR.scene.items.addItems([
-        {
-          id: effectId,
-          type: "EFFECT",
-          name: "Map Filter Effect",
-          visible: true,
-          locked: true,
-          transform: {
-            width: targetItem.image.width,
-            height: targetItem.image.height,
-          },
-          position: {
-            x: targetItem.position.x,
-            y: targetItem.position.y,
-          },
-          zIndex: targetItem.zIndex + 1,
-          attachedTo: targetItem.id,
-          effect: {
-            url: effectUrl,
-            data: effectData,
-          },
+    // Új effekt létrehozása
+    effectId = `effect-${Date.now()}`;
+    OBR.scene.items.addItems([
+      {
+        id: effectId,
+        type: "EFFECT",
+        name: "Map Filter Effect",
+        visible: true,
+        locked: true,
+        transform: {
+          width: targetItem.image.width,
+          height: targetItem.image.height,
+          scaleX: 1,
+          scaleY: 1,
+          rotation: 0,
         },
-      ]);
-    } else {
-      console.warn("Nem megfelelő targetItem az effekt létrehozásához:", targetItem);
-    }
+        scale: {
+          x: 1,
+          y: 1,
+        },
+        position: {
+          x: targetItem.position.x,
+          y: targetItem.position.y,
+        },
+        zIndex: targetItem.zIndex + 1,
+        attachedTo: targetItem.id,
+        effect: {
+          url: effectUrl,
+          data: effectData,
+        },
+      }
+    ]);
   }
 }
 
@@ -114,7 +115,7 @@ OBR.onReady(async () => {
       if (anchorId) {
         return item.id === anchorId;
       }
-      return item.type === "IMAGE" && item.layer === "MAP";
+      return item.type === "IMAGE";
     });
 
     if (selected) {
