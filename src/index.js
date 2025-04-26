@@ -27,7 +27,6 @@ function createOrUpdateEffect(targetItem) {
   const effectUrl = "https://map-filter-extension.vercel.app/effect.js";
 
   if (effectId) {
-    // Update existing effect
     OBR.scene.items.updateItems([effectId], (items) => {
       for (const item of items) {
         if (item.type === "EFFECT") {
@@ -36,7 +35,6 @@ function createOrUpdateEffect(targetItem) {
       }
     });
   } else {
-    // Create new effect
     effectId = `effect-${Date.now()}`;
     OBR.scene.items.addItems([
       {
@@ -45,24 +43,21 @@ function createOrUpdateEffect(targetItem) {
         name: "Map Filter Effect",
         visible: true,
         locked: true,
+        position: targetItem.transform.position,
+        scale: targetItem.transform.scale || { x: 1, y: 1 },
+        rotation: targetItem.transform.rotation || 0,
         transform: {
           width: targetItem.transform.width || 1,
           height: targetItem.transform.height || 1,
-          scaleX: 1,
-          scaleY: 1,
-          rotation: 0,
-          position: {
-            x: targetItem.transform.position.x,
-            y: targetItem.transform.position.y,
-          },
         },
         zIndex: targetItem.zIndex + 1 || 1,
         effect: {
           url: effectUrl,
+          target: targetItem.id,
           data: effectData,
         },
       },
-    ]);
+    ]).catch((e) => console.error("Effect létrehozás hiba:", e));
   }
 }
 
@@ -126,7 +121,6 @@ OBR.onReady(async () => {
     document.getElementById("no-selection-msg").style.display = "block";
   }
 
-  // Context menü
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
     icons: [{ icon: "/icon.svg", label: "Térkép szűrő" }],
