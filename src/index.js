@@ -11,7 +11,7 @@ const FILTER_STATE = {
 let effectId = null;
 
 function createOrUpdateEffect(targetItem) {
-  if (!targetItem || !targetItem.transform || !targetItem.transform.position) {
+  if (!targetItem || !targetItem.position) {
     console.warn("Nem megfelelő targetItem:", targetItem);
     return;
   }
@@ -43,14 +43,10 @@ function createOrUpdateEffect(targetItem) {
         name: "Map Filter Effect",
         visible: true,
         locked: true,
-        position: targetItem.transform.position,
-        scale: targetItem.transform.scale || { x: 1, y: 1 },
-        rotation: targetItem.transform.rotation || 0,
-        transform: {
-          width: targetItem.transform.width || 1,
-          height: targetItem.transform.height || 1,
-        },
-        zIndex: targetItem.zIndex + 1 || 1,
+        position: targetItem.position,
+        scale: targetItem.scale || { x: 1, y: 1 },
+        rotation: targetItem.rotation || 0,
+        zIndex: (targetItem.zIndex || 0) + 1,
         effect: {
           url: effectUrl,
           target: targetItem.id,
