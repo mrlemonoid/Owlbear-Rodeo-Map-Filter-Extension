@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <title>Owlbear Map Filter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <h1>🎨 Owlbear Map Filter</h1>
+  <div id="no-selection-msg" style="color:red;">Kérjük, válassz ki egy Map típusú képet.</div>
+
+  <div>
+    <label>Hue: <input id="hue" type="range" min="0" max="360" value="0" /></label><br/>
+    <label>Saturation: <input id="saturation" type="range" min="0" max="200" value="100" /></label><br/>
+    <label>Brightness: <input id="brightness" type="range" min="0" max="200" value="100" /></label><br/>
+    <label>Gamma: <input id="gamma" type="range" min="50" max="200" value="100" /></label><br/>
+    <label>Chroma Key: <input id="chroma" type="range" min="0" max="100" value="0" /></label>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+  <script type="module" src="./src/index.js"></script>
+</body>
+</html>

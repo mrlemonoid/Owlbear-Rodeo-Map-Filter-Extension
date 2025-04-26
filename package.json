@@ -1,10 +1,11 @@
 {
-  "name": "owlbear-map-filter-extension",
-  "version": "1.0.0",
+  "name": "owlbear-map-filter",
+  "version": "1.0.1",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "chmod +x node_modules/.bin/vite"
   },
   "dependencies": {
     "@owlbear-rodeo/sdk": "^3.1.0"
