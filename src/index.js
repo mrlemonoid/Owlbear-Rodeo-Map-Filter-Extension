@@ -27,42 +27,48 @@ function createOrUpdateEffect(targetItem) {
   const effectUrl = "https://map-filter-extension.vercel.app/effect.js";
 
   if (effectId) {
-    // Update existing effect
+    // Létező EFFECT frissítése
     OBR.scene.items.updateItems([effectId], (items) => {
-      for (const item of items) {
+      return items.map((item) => {
         if (item.type === "EFFECT") {
-          item.effect.data = effectData;
+          return {
+            ...item,
+            effect: {
+              ...item.effect,
+              data: effectData,
+            },
+          };
         }
-      }
+        return item;
+      });
     });
   } else {
-    // Create new effect
+    // Új EFFECT létrehozása
     effectId = `effect-${Date.now()}`;
-    OBR.scene.items.addItems([
-      {
-        id: effectId,
-        type: "EFFECT",
-        name: "Map Filter Effect",
-        visible: true,
-        locked: true,
-        transform: {
-          width: targetItem.transform.width || 1,
-          height: targetItem.transform.height || 1,
-          scaleX: 1,
-          scaleY: 1,
-          rotation: 0,
-          position: {
-            x: targetItem.transform.position.x,
-            y: targetItem.transform.position.y,
-          },
-        },
-        zIndex: targetItem.zIndex + 1 || 1,
-        effect: {
-          url: effectUrl,
-          data: effectData,
+    const newEffect = {
+      id: effectId,
+      type: "EFFECT",
+      name: "Map Filter Effect",
+      visible: true,
+      locked: true,
+      transform: {
+        width: targetItem.transform.width || 1,
+        height: targetItem.transform.height || 1,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        position: {
+          x: targetItem.transform.position.x,
+          y: targetItem.transform.position.y,
         },
       },
-    ]);
+      zIndex: targetItem.zIndex + 1 || 1,
+      effect: {
+        url: effectUrl,
+        data: effectData,
+      },
+    };
+    OBR.scene.items.addItems([newEffect]);
   }
 }
 
