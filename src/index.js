@@ -11,8 +11,8 @@ const FILTER_STATE = {
 let effectId = null;
 
 function createOrUpdateEffect(targetItem) {
-  if (!targetItem || !targetItem.image || !targetItem.position) {
-    console.warn("Nem megfelelő targetItem!", targetItem);
+  if (!targetItem || !targetItem.transform || !targetItem.transform.position) {
+    console.warn("Nem megfelelő targetItem:", targetItem);
     return;
   }
 
@@ -27,7 +27,7 @@ function createOrUpdateEffect(targetItem) {
   const effectUrl = "https://map-filter-extension.vercel.app/effect.js";
 
   if (effectId) {
-    // Ha már létezik az effekt, frissítjük
+    // Update existing effect
     OBR.scene.items.updateItems([effectId], (items) => {
       for (const item of items) {
         if (item.type === "EFFECT") {
@@ -36,7 +36,7 @@ function createOrUpdateEffect(targetItem) {
       }
     });
   } else {
-    // Új effekt létrehozása
+    // Create new effect
     effectId = `effect-${Date.now()}`;
     OBR.scene.items.addItems([
       {
@@ -46,27 +46,22 @@ function createOrUpdateEffect(targetItem) {
         visible: true,
         locked: true,
         transform: {
-          width: targetItem.image.width,
-          height: targetItem.image.height,
+          width: targetItem.transform.width || 1,
+          height: targetItem.transform.height || 1,
           scaleX: 1,
           scaleY: 1,
           rotation: 0,
+          position: {
+            x: targetItem.transform.position.x,
+            y: targetItem.transform.position.y,
+          },
         },
-        scale: {
-          x: 1,
-          y: 1,
-        },
-        position: {
-          x: targetItem.position.x,
-          y: targetItem.position.y,
-        },
-        zIndex: targetItem.zIndex + 1,
-        attachedTo: targetItem.id,
+        zIndex: targetItem.zIndex + 1 || 1,
         effect: {
           url: effectUrl,
           data: effectData,
         },
-      }
+      },
     ]);
   }
 }
@@ -104,7 +99,7 @@ OBR.onReady(async () => {
     const context = await OBR.popover.getContext();
     anchorId = context?.anchorElementId;
   } catch (e) {
-    console.warn("Popover context nem elérhető. Csak context menüből működik.");
+    console.warn("Nem context menüből nyitották.");
   }
 
   try {
@@ -123,26 +118,20 @@ OBR.onReady(async () => {
       setupSliders(selected);
       createOrUpdateEffect(selected);
     } else {
-      console.warn("Nincs kiválasztott megfelelő térkép.");
+      console.warn("Nincs kiválasztott kép.");
       document.getElementById("no-selection-msg").style.display = "block";
     }
   } catch (e) {
-    console.error("Hiba a scene itemek lekérésénél:", e);
+    console.error("Scene lekérés hiba:", e);
     document.getElementById("no-selection-msg").style.display = "block";
   }
 
-  // Context menü beállítása
+  // Context menü
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
-    icons: [
-      {
-        icon: "/icon.svg",
-        label: "Térkép szűrő",
-      },
-    ],
+    icons: [{ icon: "/icon.svg", label: "Térkép szűrő" }],
     onClick(context) {
       const selected = context.items.find((item) => item.type === "IMAGE");
-
       if (selected) {
         OBR.popover.open({
           id: "map-filter-ui",
@@ -154,9 +143,7 @@ OBR.onReady(async () => {
       }
     },
     filter: {
-      every: [
-        { key: "type", value: "IMAGE" },
-      ],
+      every: [{ key: "type", value: "IMAGE" }],
     },
   });
 });
