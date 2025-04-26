@@ -1,11 +1,12 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "./",
   build: {
-    outDir: "dist"
+    lib: {
+      entry: "./src/index.js",
+      formats: ["es"],
+      fileName: "index",
+    },
+    outDir: "dist",
   },
-  optimizeDeps: {
-    include: ["@owlbear-rodeo/sdk"]
-  }
 });
