@@ -3,28 +3,25 @@ export function onEffect(frame, data) {
   const imageData = ctx.getImageData(0, 0, frame.width, frame.height);
   const pixels = imageData.data;
 
-  const hue = (data?.hue ?? 0) / 360;
-  const saturation = (data?.saturation ?? 100) / 100;
-  const brightness = (data?.brightness ?? 100) / 100;
+  const hueShift = (data.hue || 0) / 360;
+  const saturation = (data.saturation || 100) / 100;
+  const brightness = (data.brightness || 100) / 100;
 
   for (let i = 0; i < pixels.length; i += 4) {
     let r = pixels[i];
     let g = pixels[i + 1];
     let b = pixels[i + 2];
 
-    // RGB -> HSL
-    let [h, s, l] = rgbToHsl(r, g, b);
+    let hsl = rgbToHsl(r, g, b);
+    hsl[0] = (hsl[0] + hueShift) % 1;
+    hsl[1] *= saturation;
+    hsl[2] *= brightness;
 
-    h = (h + hue) % 1;
-    s = clamp(s * saturation, 0, 1);
-    l = clamp(l * brightness, 0, 1);
+    let rgb = hslToRgb(hsl[0], hsl[1], hsl[2]);
 
-    // HSL -> RGB
-    [r, g, b] = hslToRgb(h, s, l);
-
-    pixels[i] = r;
-    pixels[i + 1] = g;
-    pixels[i + 2] = b;
+    pixels[i] = rgb[0];
+    pixels[i + 1] = rgb[1];
+    pixels[i + 2] = rgb[2];
   }
 
   ctx.putImageData(imageData, 0, 0);
@@ -34,12 +31,13 @@ function rgbToHsl(r, g, b) {
   r /= 255;
   g /= 255;
   b /= 255;
-
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
+  let h, s, l = (max + min) / 2;
 
-  if (max !== min) {
+  if (max === min) {
+    h = s = 0;
+  } else {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
@@ -55,7 +53,6 @@ function rgbToHsl(r, g, b) {
 
 function hslToRgb(h, s, l) {
   let r, g, b;
-
   if (s === 0) {
     r = g = b = l;
   } else {
@@ -64,7 +61,7 @@ function hslToRgb(h, s, l) {
       if (t > 1) t -= 1;
       if (t < 1/6) return p + (q - p) * 6 * t;
       if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - t) * 6 * (2/3 - t);
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
       return p;
     };
 
@@ -77,8 +74,4 @@ function hslToRgb(h, s, l) {
   }
 
   return [r * 255, g * 255, b * 255];
-}
-
-function clamp(val, min, max) {
-  return Math.min(Math.max(val, min), max);
 }
