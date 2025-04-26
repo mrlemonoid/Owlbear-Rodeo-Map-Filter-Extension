@@ -11,10 +11,15 @@ const FILTER_STATE = {
 let effectId = null;
 
 function createOrUpdateEffect(targetItem) {
-  if (!targetItem || !targetItem.transform || !targetItem.transform.position) {
+  if (!targetItem || !targetItem.transform) {
     console.warn("Nem megfelelő targetItem:", targetItem);
     return;
   }
+
+  const pos = targetItem.transform.position || { x: 0, y: 0 };
+  const width = targetItem.transform.width || 1;
+  const height = targetItem.transform.height || 1;
+  const zIndex = targetItem.zIndex ?? 1;
 
   const effectData = {
     hue: FILTER_STATE.hue,
@@ -46,17 +51,17 @@ function createOrUpdateEffect(targetItem) {
         visible: true,
         locked: true,
         transform: {
-          width: targetItem.transform.width || 1,
-          height: targetItem.transform.height || 1,
+          width: width,
+          height: height,
           scaleX: 1,
           scaleY: 1,
           rotation: 0,
           position: {
-            x: targetItem.transform.position.x,
-            y: targetItem.transform.position.y,
+            x: pos.x,
+            y: pos.y,
           },
         },
-        zIndex: targetItem.zIndex + 1 || 1,
+        zIndex: zIndex + 1,
         effect: {
           url: effectUrl,
           data: effectData,
