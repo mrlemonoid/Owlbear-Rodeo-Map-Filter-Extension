@@ -1,72 +1,34 @@
+// index.js
 import OBR from "@owlbear-rodeo/sdk";
 
-const FILTER_STATE = {
-  hue: 0,
-  saturation: 100,
-  brightness: 100,
-};
-
-let activeEffectId = null;
-let targetItemId = null;
-
-async function createOrUpdateEffect() {
-  if (!targetItemId) return;
-
-  // Ha van régi effekt, töröljük
-  if (activeEffectId) {
-    await OBR.scene.items.deleteItems([activeEffectId]);
-  }
-
-  // Új effekt létrehozása
-  activeEffectId = `map-filter-effect-${Date.now()}`;
-
-  await OBR.scene.items.addItems([
-    {
-      id: activeEffectId,
-      type: "EFFECT",
-      name: "Map Filter Effect",
-      visible: true,
-      locked: true,
-      transform: { width: 1, height: 1 },
-      zIndex: 100,
-      effect: {
-        url: "/effect.js",
-        targetId: targetItemId,
-        data: {
-          hue: FILTER_STATE.hue,
-          saturation: FILTER_STATE.saturation,
-          brightness: FILTER_STATE.brightness,
-        },
+OBR.onReady(() => {
+  OBR.contextMenu.create({
+    id: "map-filter.apply-filter",
+    icons: [
+      {
+        icon: "/icon.svg",
+        label: "Térkép szűrő",
       },
+    ],
+    onClick(context) {
+      const selected = context.items.find(
+        (item) => item.type === "IMAGE"
+      );
+
+      if (selected) {
+        OBR.popover.open({
+          id: "map-filter-ui",
+          url: "/index.html",
+          height: 400,
+          width: 300,
+          anchorElementId: selected.id,
+        });
+      }
     },
-  ]);
-}
-
-function setupSliders() {
-  ["hue", "saturation", "brightness"].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", async () => {
-        FILTER_STATE[id] = Number(el.value);
-        await createOrUpdateEffect();
-      });
-    }
+    filter: {
+      every: [
+        { key: "type", value: "IMAGE" },
+      ],
+    },
   });
-}
-
-OBR.onReady(async () => {
-  console.log("[Owlbear Map Filter] Extension loaded");
-
-  const context = await OBR.popover.getWindowContext();
-  if (!context || !context.anchorElementId) {
-    console.warn("Popover was not opened from a selected item.");
-    document.getElementById("no-selection-msg").style.display = "block";
-    return;
-  }
-
-  targetItemId = context.anchorElementId;
-
-  document.getElementById("no-selection-msg").style.display = "none";
-  setupSliders();
-  await createOrUpdateEffect();
 });
