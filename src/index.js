@@ -27,7 +27,6 @@ function createOrUpdateEffect(targetItem) {
   const effectUrl = "https://map-filter-extension.vercel.app/effect.js";
 
   if (effectId) {
-    // Létező EFFECT frissítése
     OBR.scene.items.updateItems([effectId], (items) => {
       return items.map((item) => {
         if (item.type === "EFFECT") {
@@ -43,7 +42,6 @@ function createOrUpdateEffect(targetItem) {
       });
     });
   } else {
-    // Új EFFECT létrehozása
     effectId = `effect-${Date.now()}`;
     const newEffect = {
       id: effectId,
@@ -56,13 +54,13 @@ function createOrUpdateEffect(targetItem) {
         height: targetItem.transform.height || 1,
         scaleX: 1,
         scaleY: 1,
-        rotation: 0,
+        rotation: targetItem.transform.rotation || 0,
         position: {
           x: targetItem.transform.position.x,
           y: targetItem.transform.position.y,
         },
       },
-      zIndex: targetItem.zIndex + 1 || 1,
+      zIndex: (targetItem.zIndex ?? 0) + 1,
       effect: {
         url: effectUrl,
         data: effectData,
@@ -132,7 +130,6 @@ OBR.onReady(async () => {
     document.getElementById("no-selection-msg").style.display = "block";
   }
 
-  // Context menü
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
     icons: [{ icon: "/icon.svg", label: "Térkép szűrő" }],
