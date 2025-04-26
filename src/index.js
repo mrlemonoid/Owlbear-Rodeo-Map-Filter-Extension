@@ -8,8 +8,11 @@ const FILTER_STATE = {
   chroma: 0,
 };
 
+let effectId = null;
+
 function createOrUpdateEffect(targetItem) {
-  const effectId = `map-filter-effect-${targetItem.id}`;
+  if (!targetItem) return;
+
   const effectData = {
     hue: FILTER_STATE.hue,
     saturation: FILTER_STATE.saturation,
@@ -18,64 +21,66 @@ function createOrUpdateEffect(targetItem) {
     chroma: FILTER_STATE.chroma,
   };
 
-  OBR.scene.items.getItems().then((items) => {
-    const existing = items.find((i) => i.id === effectId);
+  const effectUrl = "https://map-filter-extension.vercel.app/effect.js";
 
-    if (existing) {
-      OBR.scene.items.updateItems([effectId], (items) => {
-        for (const item of items) {
-          if (item.type === "EFFECT") {
-            item.effect.data = effectData;
-          }
+  if (effectId) {
+    OBR.scene.items.updateItems([effectId], (items) => {
+      for (const item of items) {
+        if (item.type === "EFFECT") {
+          item.effect.data = effectData;
         }
-      });
-    } else {
-      if (
-        targetItem.image &&
-        typeof targetItem.image.width === "number" &&
-        typeof targetItem.image.height === "number" &&
-        typeof targetItem.zIndex === "number" &&
-        targetItem.position
-      ) {
-        OBR.scene.items.addItems([
-          {
-            id: effectId,
-            type: "EFFECT",
-            attachedTo: targetItem.id,
-            visible: true,
-            locked: true,
-            name: "Map Filter Effect",
-            zIndex: targetItem.zIndex + 1,
-            transform: {
-              width: targetItem.image.width,
-              height: targetItem.image.height,
-            },
-            position: {
-              x: targetItem.position.x,
-              y: targetItem.position.y,
-            },
-            effect: {
-              url: "/effect.js",
-              data: effectData,
-            },
-          },
-        ]);
-      } else {
-        console.warn("Nem megfelelő targetItem az effekt létrehozásához:", targetItem);
       }
+    });
+  } else {
+    if (
+      targetItem.image &&
+      typeof targetItem.image.width === "number" &&
+      typeof targetItem.image.height === "number" &&
+      typeof targetItem.zIndex === "number" &&
+      targetItem.position
+    ) {
+      effectId = `effect-${Date.now()}`;
+
+      OBR.scene.items.addItems([
+        {
+          id: effectId,
+          type: "EFFECT",
+          name: "Map Filter Effect",
+          visible: true,
+          locked: true,
+          transform: {
+            width: targetItem.image.width,
+            height: targetItem.image.height,
+          },
+          position: {
+            x: targetItem.position.x,
+            y: targetItem.position.y,
+          },
+          zIndex: targetItem.zIndex + 1,
+          attachedTo: targetItem.id,
+          effect: {
+            url: effectUrl,
+            data: effectData,
+          },
+        },
+      ]);
+    } else {
+      console.warn("Nem megfelelő targetItem az effekt létrehozásához:", targetItem);
     }
-  });
+  }
 }
 
-function debounce(func, wait) {
+function debounce(func, delay) {
   let timeout;
-  return function (...args) {
+  return (...args) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
+    timeout = setTimeout(() => func(...args), delay);
   };
 }
 
-const debouncedEffectUpdate = debounce(createOrUpdateEffect, 100);
+const debouncedApplyFilters = debounce((targetItem) => {
+  createOrUpdateEffect(targetItem);
+}, 200);
 
 function setupSliders(targetItem) {
   const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
@@ -84,7 +89,7 @@ function setupSliders(targetItem) {
     if (el) {
       el.addEventListener("input", () => {
         FILTER_STATE[id] = Number(el.value);
-        debouncedEffectUpdate(targetItem);
+        debouncedApplyFilters(targetItem);
       });
     }
   });
@@ -93,24 +98,39 @@ function setupSliders(targetItem) {
 OBR.onReady(async () => {
   console.log("OBR ready");
 
+  let anchorId = null;
+  try {
+    const context = await OBR.popover.getContext();
+    anchorId = context?.anchorElementId;
+  } catch (e) {
+    console.warn("Popover context nem elérhető. Csak context menüből működik.");
+  }
+
   try {
     const items = await OBR.scene.items.getItems();
     console.log("Összes scene item:", items);
 
-    const selected = items.find((item) => item.type === "IMAGE" && item.layer === "MAP");
+    const selected = items.find((item) => {
+      if (anchorId) {
+        return item.id === anchorId;
+      }
+      return item.type === "IMAGE" && item.layer === "MAP";
+    });
 
     if (selected) {
       document.getElementById("no-selection-msg").style.display = "none";
       setupSliders(selected);
       createOrUpdateEffect(selected);
     } else {
+      console.warn("Nincs kiválasztott megfelelő térkép.");
       document.getElementById("no-selection-msg").style.display = "block";
     }
   } catch (e) {
-    console.error("Hiba a getItems() közben:", e);
+    console.error("Hiba a scene itemek lekérésénél:", e);
     document.getElementById("no-selection-msg").style.display = "block";
   }
 
+  // Context menü beállítása
   OBR.contextMenu.create({
     id: "map-filter.apply-filter",
     icons: [
