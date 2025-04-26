@@ -1,149 +1,52 @@
+// src/index.js
 import OBR from "@owlbear-rodeo/sdk";
 
-const FILTER_STATE = {
-  hue: 0,
-  saturation: 100,
-  brightness: 100,
-  gamma: 100,
-  chroma: 0,
-};
-
-let effectId = null;
-
-function createOrUpdateEffect(targetItem) {
-  if (!targetItem || !targetItem.transform || !targetItem.transform.position) {
-    console.warn("Nem megfelelő targetItem:", targetItem);
-    return;
-  }
-
-  const effectData = {
-    hue: FILTER_STATE.hue,
-    saturation: FILTER_STATE.saturation,
-    brightness: FILTER_STATE.brightness,
-    gamma: FILTER_STATE.gamma,
-    chroma: FILTER_STATE.chroma,
-  };
-
-  const effectUrl = "https://map-filter-extension.vercel.app/effect.js";
-
-  if (effectId) {
-    // Update existing effect
-    OBR.scene.items.updateItems([effectId], (items) => {
-      for (const item of items) {
-        if (item.type === "EFFECT") {
-          item.effect.data = effectData;
-        }
-      }
-    });
-  } else {
-    // Create new effect
-    effectId = `effect-${Date.now()}`;
-    OBR.scene.items.addItems([
-      {
-        id: effectId,
-        type: "EFFECT",
-        name: "Map Filter Effect",
-        visible: true,
-        locked: true,
-        transform: {
-          width: targetItem.transform.width || 1,
-          height: targetItem.transform.height || 1,
-          scaleX: 1,
-          scaleY: 1,
-          rotation: 0,
-          position: {
-            x: targetItem.transform.position.x,
-            y: targetItem.transform.position.y,
-          },
-        },
-        zIndex: targetItem.zIndex + 1 || 1,
-        effect: {
-          url: effectUrl,
-          data: effectData,
-        },
-      },
-    ]);
-  }
-}
-
-function debounce(func, delay) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), delay);
-  };
-}
-
-const debouncedApplyFilters = debounce((targetItem) => {
-  createOrUpdateEffect(targetItem);
-}, 200);
-
-function setupSliders(targetItem) {
-  const sliders = ["hue", "saturation", "brightness", "gamma", "chroma"];
-  sliders.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", () => {
-        FILTER_STATE[id] = Number(el.value);
-        debouncedApplyFilters(targetItem);
-      });
-    }
-  });
-}
-
+// Amikor az extension betöltödik
 OBR.onReady(async () => {
-  console.log("OBR ready");
+  console.log("[Owlbear Map Filter] Extension loaded");
 
-  let anchorId = null;
-  try {
-    const context = await OBR.popover.getContext();
-    anchorId = context?.anchorElementId;
-  } catch (e) {
-    console.warn("Nem context menüből nyitották.");
-  }
-
-  try {
-    const items = await OBR.scene.items.getItems();
-    console.log("Összes scene item:", items);
-
-    const selected = items.find((item) => {
-      if (anchorId) {
-        return item.id === anchorId;
-      }
-      return item.type === "IMAGE";
-    });
-
-    if (selected) {
-      document.getElementById("no-selection-msg").style.display = "none";
-      setupSliders(selected);
-      createOrUpdateEffect(selected);
-    } else {
-      console.warn("Nincs kiválasztott kép.");
-      document.getElementById("no-selection-msg").style.display = "block";
-    }
-  } catch (e) {
-    console.error("Scene lekérés hiba:", e);
-    document.getElementById("no-selection-msg").style.display = "block";
-  }
-
-  // Context menü
+  // Context menü gomb regisztrálása
   OBR.contextMenu.create({
-    id: "map-filter.apply-filter",
-    icons: [{ icon: "/icon.svg", label: "Térkép szűrő" }],
-    onClick(context) {
-      const selected = context.items.find((item) => item.type === "IMAGE");
-      if (selected) {
-        OBR.popover.open({
-          id: "map-filter-ui",
-          url: "/index.html",
-          height: 400,
-          width: 300,
-          anchorElementId: selected.id,
-        });
-      }
-    },
+    id: "map-filter.apply-overlay",
+    icons: [{ icon: "/icon.svg", label: "Színátfedés" }],
     filter: {
       every: [{ key: "type", value: "IMAGE" }],
+    },
+    onClick: async (context) => {
+      const selected = context.items.find(item => item.type === "IMAGE");
+      if (!selected) return;
+
+      const color = prompt("Add meg a színt HEX formátumban (pl. #ff0000):", "#ff0000");
+      if (!color) return;
+
+      const blendMode = prompt("Add meg a blend módot (pl. MULTIPLY, SCREEN, OVERLAY, stb.):", "MULTIPLY");
+      if (!blendMode) return;
+
+      const opacity = parseFloat(prompt("Add meg az áttetszőséget (0.0 - 1.0):", "0.5"));
+
+      const overlayEffect = {
+        type: "EFFECT",
+        position: selected.position,
+        size: {
+          width: selected.image.width,
+          height: selected.image.height,
+        },
+        texture: {
+          src: "https://dummyimage.com/1x1/ffffff/ffffff", // 1x1 pixeles fehér kép
+          tint: color,
+        },
+        opacity: isNaN(opacity) ? 0.5 : opacity,
+        blendMode: blendMode.toUpperCase(),
+        visible: true,
+        name: "Map Color Overlay",
+      };
+
+      try {
+        await OBR.scene.items.addItems([overlayEffect]);
+        console.log("Overlay sikeresen hozzáadva!");
+      } catch (error) {
+        console.error("Hiba az overlay létrehozásánál:", error);
+      }
     },
   });
 });
